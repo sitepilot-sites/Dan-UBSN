@@ -1,0 +1,7 @@
+[build]
+  publish = "Mock Site"
+
+[[redirects]]
+  from = "/"
+  to = "/usbn-redesign-mockup.html"
+  status = 200
