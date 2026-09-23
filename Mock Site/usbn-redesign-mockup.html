@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USBN — Ultimate Sports Broadcasting Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800;900&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#071026;
+  --ink-2:#0C1930;
+  --ink-3:#152949;
+  --paper:#E6E9EE;
+  --paper-2:#F4F6F8;
+  --tally:#FFB020;
+  --live:#F0392B;
+  --chalk:#FFFFFF;
+  --mute:#8496B2;
+  --mute-ink:#5C6B84;
+  --line:rgba(255,255,255,.13);
+  --line-ink:rgba(7,16,38,.14);
+  --display:"Big Shoulders Display","Haettenschweiler","Arial Narrow",sans-serif;
+  --body:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --wrap:1180px;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--ink);color:var(--chalk);
+  font-family:var(--body);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--tally);outline-offset:3px;border-radius:2px}
+.wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 24px}
+
+/* ---------- type ---------- */
+.display{font-family:var(--display);font-weight:800;line-height:.92;letter-spacing:-.01em;text-transform:uppercase}
+h1.display{font-size:clamp(44px,7.4vw,92px)}
+h2.display{font-size:clamp(32px,4.6vw,54px);margin:0}
+h3{font-family:var(--display);font-weight:700;text-transform:uppercase;line-height:1;letter-spacing:.01em;margin:0}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--mute);
+}
+.lede{font-size:17px;color:#C3CEDE;max-width:56ch}
+
+/* ---------- station bar / nav ---------- */
+.stationbar{
+  position:sticky;top:0;z-index:60;background:rgba(7,16,38,.92);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+}
+.stationbar .row{display:flex;align-items:center;gap:24px;height:70px}
+.mark{display:flex;align-items:center;gap:10px;text-decoration:none;flex:0 0 auto}
+.mark .dot{width:11px;height:11px;border-radius:50%;background:var(--live);box-shadow:0 0 0 3px rgba(240,57,43,.22)}
+.mark .word{font-family:var(--display);font-weight:900;font-size:31px;letter-spacing:.02em;line-height:1}
+.mark .sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--mute);display:block;margin-top:2px}
+nav.main{margin-left:auto;display:flex;gap:26px}
+nav.main a{
+  font-size:13.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  text-decoration:none;color:#C3CEDE;padding:6px 0;border-bottom:2px solid transparent;
+}
+nav.main a:hover{color:var(--chalk);border-bottom-color:var(--tally)}
+.btn-live{
+  display:inline-flex;align-items:center;gap:8px;background:var(--live);color:#fff;
+  text-decoration:none;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+  padding:11px 18px;border-radius:2px;
+}
+.btn-live:hover{background:#ff5142}
+.btn-live .pip{width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1.6s infinite}
+.menu-toggle{display:none;background:none;border:1px solid var(--line);color:#fff;padding:9px 12px;border-radius:2px;font-family:var(--mono);font-size:12px;letter-spacing:.1em}
+
+/* ---------- ticker ---------- */
+.ticker{background:var(--ink-3);border-bottom:1px solid var(--line);overflow:hidden;position:relative}
+.ticker .label{
+  position:absolute;left:0;top:0;bottom:0;z-index:2;display:flex;align-items:center;
+  background:var(--tally);color:var(--ink);padding:0 14px;
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.16em;
+}
+.ticker .track{display:flex;gap:0;white-space:nowrap;animation:crawl 46s linear infinite;padding:11px 0}
+.ticker .item{
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:#D6DEEA;
+  padding:0 26px;border-right:1px solid var(--line);
+}
+.ticker .item b{color:var(--chalk);font-weight:600}
+.ticker .item .w{color:var(--tally)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:64px 0 72px;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(900px 420px at 12% 0%,rgba(21,41,73,.95),transparent 70%),
+    repeating-linear-gradient(115deg,rgba(255,255,255,.028) 0 2px,transparent 2px 9px);
+  pointer-events:none;
+}
+.hero .wrap{position:relative;z-index:1}
+.hero-grid{display:grid;grid-template-columns:1.35fr .95fr;gap:52px;align-items:start}
+.onair-flag{display:flex;align-items:center;gap:11px;margin-bottom:20px}
+.lamp{width:13px;height:13px;border-radius:50%;background:var(--live);box-shadow:0 0 14px 2px rgba(240,57,43,.7);animation:pulse 2.4s ease-in-out infinite}
+.onair-flag span{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.24em;color:var(--live)}
+.hero h1{margin:0 0 18px}
+.hero h1 em{font-style:normal;color:var(--tally)}
+.callsheet{display:flex;flex-wrap:wrap;gap:10px 22px;margin:0 0 28px;padding:0;list-style:none}
+.callsheet li{font-family:var(--mono);font-size:12.5px;color:#B7C4D6;display:flex;align-items:center;gap:8px}
+.callsheet li::before{content:"";width:4px;height:4px;background:var(--tally);border-radius:50%}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:34px}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;padding:15px 24px;border-radius:2px;
+  text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid transparent;transition:transform .12s ease,background .15s ease;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--tally);color:var(--ink)}
+.btn-primary:hover{background:#ffc44d}
+.btn-ghost{border-color:var(--line);color:var(--chalk)}
+.btn-ghost:hover{border-color:var(--tally);color:var(--tally)}
+
+/* score bug */
+.bug{border:1px solid var(--line);background:linear-gradient(180deg,rgba(21,41,73,.75),rgba(12,25,48,.75));max-width:520px}
+.bug-head{
+  display:flex;justify-content:space-between;align-items:center;padding:8px 14px;
+  border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--mute);
+}
+.bug-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch}
+.bug-team{display:flex;align-items:center;gap:12px;padding:16px}
+.bug-team.away{justify-content:flex-end;text-align:right}
+.bug-abbr{font-family:var(--display);font-weight:800;font-size:29px;letter-spacing:.03em;line-height:1}
+.bug-score{font-family:var(--display);font-weight:900;font-size:46px;line-height:.9;color:var(--tally)}
+.bug-clock{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:12px 20px;border-left:1px solid var(--line);border-right:1px solid var(--line);background:rgba(7,16,38,.55);
+}
+.bug-clock .q{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--mute)}
+.bug-clock .t{font-family:var(--mono);font-size:19px;font-weight:600;color:var(--chalk)}
+
+/* tally board = signature */
+.board{border:1px solid var(--line);background:var(--ink-2)}
+.board-head{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:13px 16px;border-bottom:1px solid var(--line);background:rgba(21,41,73,.5);
+}
+.board-head .ttl{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.18em;color:#C3CEDE}
+.board-head .clock{font-family:var(--mono);font-size:13px;color:var(--tally);font-weight:500;font-variant-numeric:tabular-nums}
+.feed{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.feed:last-child{border-bottom:0}
+.feed .ch{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.08em}
+.feed .name{font-size:14px;font-weight:600;line-height:1.3}
+.feed .meta{font-family:var(--mono);font-size:10.5px;color:var(--mute);letter-spacing:.05em;margin-top:3px}
+.state{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.13em;padding:5px 9px;border:1px solid var(--line);white-space:nowrap}
+.state i{width:7px;height:7px;border-radius:50%;background:var(--mute);display:block}
+.state.on{color:var(--live);border-color:rgba(240,57,43,.45)}
+.state.on i{background:var(--live);box-shadow:0 0 9px rgba(240,57,43,.85);animation:pulse 2.4s ease-in-out infinite}
+.state.standby{color:var(--tally);border-color:rgba(255,176,32,.4)}
+.state.standby i{background:var(--tally)}
+.state.off{color:var(--mute)}
+.board-foot{padding:12px 16px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--mute);background:rgba(7,16,38,.5)}
+
+/* ---------- section shells ---------- */
+.section{padding:88px 0}
+.section-ink{background:var(--ink)}
+.section-paper{background:var(--paper);color:var(--ink)}
+.section-paper .eyebrow{color:var(--mute-ink)}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:34px}
+.section-head .eyebrow{display:block;margin-bottom:10px}
+.link-more{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:3px;white-space:nowrap;
+}
+.link-more:hover{color:var(--tally);border-color:var(--tally)}
+
+/* ---------- rundown (paper log) ---------- */
+.log{border-top:2px solid var(--ink)}
+.log-row{
+  display:grid;grid-template-columns:96px 88px 1fr 210px 132px;gap:20px;align-items:center;
+  padding:18px 4px;border-bottom:1px solid var(--line-ink);
+}
+.log-row.head{padding:10px 4px;border-bottom:1px solid var(--ink)}
+.log-row.head span{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;color:var(--mute-ink);text-transform:uppercase}
+.log-row:not(.head):hover{background:rgba(255,255,255,.6)}
+.log .day{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--ink)}
+.log .time{font-family:var(--mono);font-size:12px;color:var(--mute-ink)}
+.log .match{font-family:var(--display);font-weight:700;font-size:23px;text-transform:uppercase;line-height:1.05}
+.log .sport{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--mute-ink);margin-top:4px}
+.log .crew{font-size:13px;color:var(--mute-ink)}
+.log .go{display:flex;gap:8px;justify-content:flex-end}
+.chip{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;padding:8px 11px;border:1px solid var(--ink);color:var(--ink);white-space:nowrap;
+}
+.chip:hover{background:var(--ink);color:var(--paper)}
+.chip.solid{background:var(--ink);color:var(--paper)}
+.chip.solid:hover{background:var(--live);border-color:var(--live)}
+
+/* ---------- recaps ---------- */
+.recaps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.recap{border:1px solid var(--line);background:var(--ink-2);display:flex;flex-direction:column;text-decoration:none}
+.recap:hover{border-color:rgba(255,176,32,.5)}
+.recap .frame{
+  height:150px;position:relative;
+  background:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 10px,transparent 10px 20px),
+    linear-gradient(140deg,var(--ink-3),#0A1730);
+  display:flex;align-items:flex-end;padding:14px;
+}
+.recap .frame .slot{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:rgba(255,255,255,.35)}
+.finalbar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(7,16,38,.6)}
+.finalbar .fin{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--mute)}
+.finalbar .sc{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.02em;margin-left:auto}
+.wl{font-family:var(--mono);font-size:10px;font-weight:600;padding:3px 7px;border-radius:2px}
+.wl.win{background:rgba(255,176,32,.16);color:var(--tally)}
+.wl.loss{background:rgba(132,150,178,.16);color:var(--mute)}
+.recap .body{padding:18px 16px 20px;display:flex;flex-direction:column;gap:9px;flex:1}
+.recap .date{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--mute)}
+.recap h3{font-size:24px;line-height:1.02}
+.recap p{margin:0;font-size:14px;color:#B0BDD1;line-height:1.55}
+.recap .read{margin-top:auto;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--tally)}
+
+/* ---------- podcasts ---------- */
+.pods{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.pod{
+  border:1px solid var(--line-ink);background:var(--paper-2);padding:26px 22px 24px;
+  text-decoration:none;color:var(--ink);display:flex;flex-direction:column;gap:12px;
+}
+.pod:hover{border-color:var(--ink);box-shadow:6px 6px 0 var(--ink)}
+.pod .bars{display:flex;align-items:flex-end;gap:3px;height:26px}
+.pod .bars i{width:4px;background:var(--ink);display:block}
+.pod h3{font-size:26px;line-height:1.02}
+.pod p{margin:0;font-size:14px;color:var(--mute-ink)}
+.pod .host{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--mute-ink)}
+.pod .go{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:auto;padding-top:8px}
+
+/* ---------- teams ---------- */
+.teams{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.team{
+  position:relative;border:1px solid var(--line);min-height:230px;padding:20px;
+  display:flex;flex-direction:column;justify-content:flex-end;text-decoration:none;overflow:hidden;
+  background:linear-gradient(180deg,rgba(21,41,73,.35),rgba(7,16,38,.9));
+}
+.team::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.045) 0 1px,transparent 1px 16px);
+  pointer-events:none;
+}
+.team:hover{border-color:var(--tally)}
+.team .initials{
+  position:absolute;top:-14px;right:6px;font-family:var(--display);font-weight:900;font-size:92px;
+  color:rgba(255,255,255,.06);letter-spacing:-.02em;line-height:1;
+}
+.team h3{font-size:27px;position:relative;z-index:1}
+.team .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--mute);margin-top:8px;position:relative;z-index:1}
+
+/* ---------- about / stats strip ---------- */
+.about{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+.about h2{margin-bottom:18px}
+.about p{color:#B7C4D6;font-size:16.5px}
+.covers{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+.covers li{background:var(--ink);padding:14px 16px;display:flex;gap:14px;align-items:baseline}
+.covers li .n{font-family:var(--mono);font-size:10.5px;color:var(--tally);letter-spacing:.1em}
+.covers li .t{font-size:14.5px}
+.covers li .t b{display:block;font-weight:600;margin-bottom:2px}
+.covers li .t span{color:var(--mute);font-size:13px}
+
+/* ---------- cta ---------- */
+.cta{background:var(--tally);color:var(--ink);padding:70px 0}
+.cta-in{display:flex;align-items:center;justify-content:space-between;gap:34px;flex-wrap:wrap}
+.cta h2{max-width:16ch}
+.cta p{margin:12px 0 0;max-width:44ch;font-size:16px;color:#4A3B14}
+.cta .btn-primary{background:var(--ink);color:var(--tally)}
+.cta .btn-primary:hover{background:#0F2040}
+
+/* ---------- footer ---------- */
+footer{background:#040A18;padding:58px 0 30px;border-top:1px solid var(--line)}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:36px;padding-bottom:36px;border-bottom:1px solid var(--line)}
+.foot-grid h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase;margin:0 0 16px;font-weight:600}
+.foot-grid ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.foot-grid a{text-decoration:none;font-size:14px;color:#C3CEDE}
+.foot-grid a:hover{color:var(--tally)}
+.foot-grid p{font-size:14px;color:var(--mute);margin:14px 0 0;max-width:34ch}
+.social{display:flex;gap:9px;margin-top:16px;flex-wrap:wrap}
+.social a{
+  width:38px;height:38px;border:1px solid var(--line);display:grid;place-items:center;
+  font-family:var(--mono);font-size:11px;color:#C3CEDE;text-decoration:none;
+}
+.social a:hover{border-color:var(--tally);color:var(--tally)}
+.foot-bot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;padding-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--mute)}
+
+/* ---------- motion ---------- */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes crawl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .ticker .track{transform:none}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:1000px){
+  .hero-grid{grid-template-columns:1fr;gap:38px}
+  .recaps,.pods{grid-template-columns:1fr 1fr}
+  .teams{grid-template-columns:1fr 1fr}
+  .about{grid-template-columns:1fr;gap:32px}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .log-row{grid-template-columns:80px 1fr 128px;row-gap:6px}
+  .log-row .time{grid-column:1;color:var(--mute-ink)}
+  .log-row .crew{grid-column:2/4;font-size:12.5px}
+  .log-row.head{display:none}
+}
+@media (max-width:680px){
+  .section{padding:60px 0}
+  nav.main,.stationbar .btn-live{display:none}
+  .menu-toggle{display:block;margin-left:auto}
+  .recaps,.pods,.teams{grid-template-columns:1fr}
+  .section-head{flex-direction:column;align-items:flex-start;gap:12px}
+  .ticker .label{display:none}
+  .bug-row{grid-template-columns:1fr}
+  .bug-clock{flex-direction:row;gap:14px;border-left:0;border-right:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .bug-team.away{justify-content:flex-start;text-align:left}
+  .log-row{grid-template-columns:1fr;padding:16px 4px}
+  .log .go{justify-content:flex-start}
+  .cta-in{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ STATION BAR ============ -->
+<header class="stationbar">
+  <div class="wrap row">
+    <a class="mark" href="#top">
+      <span class="dot" aria-hidden="true"></span>
+      <span>
+        <span class="word">USBN</span>
+        <span class="sub">ULTIMATE SPORTS BROADCASTING NETWORK</span>
+      </span>
+    </a>
+    <nav class="main" aria-label="Main">
+      <a href="#live">Live</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#recaps">Recaps</a>
+      <a href="#podcasts">Podcasts</a>
+      <a href="#teams">Teams</a>
+      <a href="#about">About</a>
+    </nav>
+    <a class="btn-live" href="#live"><span class="pip" aria-hidden="true"></span>Watch live</a>
+    <button class="menu-toggle" aria-label="Open menu">MENU</button>
+  </div>
+</header>
+
+<!-- ============ TICKER ============ -->
+<div class="ticker" id="top">
+  <span class="label" aria-hidden="true">SCORES</span>
+  <div class="track">
+    <span class="item">FINAL &nbsp;<b>MIAMI–HAMILTON</b> 76 &nbsp;<b>UC CLERMONT</b> 66</span>
+    <span class="item">FINAL &nbsp;<b class="w">UC CLERMONT</b> 96 &nbsp;<b>MAINE–AUGUSTA</b> 84</span>
+    <span class="item">FINAL &nbsp;<b>VINCENNES</b> 101 &nbsp;<b>LADY COUGARS</b> 37</span>
+    <span class="item">NEXT &nbsp;<b>ANDERSON</b> at <b>TURPIN</b> · FRI 7:00P</span>
+    <span class="item">REPLAY &nbsp;<b>REDSKIN CLASSICS</b> · 1997 REGIONAL FINAL</span>
+    <span class="item" aria-hidden="true">FINAL &nbsp;<b>MIAMI–HAMILTON</b> 76 &nbsp;<b>UC CLERMONT</b> 66</span>
+    <span class="item" aria-hidden="true">FINAL &nbsp;<b class="w">UC CLERMONT</b> 96 &nbsp;<b>MAINE–AUGUSTA</b> 84</span>
+    <span class="item" aria-hidden="true">FINAL &nbsp;<b>VINCENNES</b> 101 &nbsp;<b>LADY COUGARS</b> 37</span>
+    <span class="item" aria-hidden="true">NEXT &nbsp;<b>ANDERSON</b> at <b>TURPIN</b> · FRI 7:00P</span>
+    <span class="item" aria-hidden="true">REPLAY &nbsp;<b>REDSKIN CLASSICS</b> · 1997 REGIONAL FINAL</span>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="live">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="onair-flag"><span class="lamp" aria-hidden="true"></span><span>ON AIR NOW</span></div>
+      <h1 class="display">Cougars at<br>Miami&#8211;<em>Hamilton</em></h1>
+      <ul class="callsheet">
+        <li>Men's basketball</li>
+        <li>Tip 7:00 PM ET</li>
+        <li>Call: Dan Albers &amp; Steve Ellis</li>
+        <li>Free stream, no login</li>
+      </ul>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#live">Watch the stream</a>
+        <a class="btn btn-ghost" href="#live">Listen on the radio feed</a>
+      </div>
+
+      <div class="bug">
+        <div class="bug-head"><span>LIVE SCORE</span><span>USBN CH 1</span></div>
+        <div class="bug-row">
+          <div class="bug-team away">
+            <span class="bug-abbr">UCC</span>
+            <span class="bug-score">41</span>
+          </div>
+          <div class="bug-clock">
+            <span class="q">2ND HALF</span>
+            <span class="t">12:04</span>
+          </div>
+          <div class="bug-team">
+            <span class="bug-score">38</span>
+            <span class="bug-abbr">MIA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- signature: tally board -->
+    <aside class="board" aria-label="Today's feeds">
+      <div class="board-head">
+        <span class="ttl">CONTROL ROOM</span>
+        <span class="clock" id="clock">--:--:-- ET</span>
+      </div>
+
+      <div class="feed">
+        <span class="ch">CH 1</span>
+        <span>
+          <span class="name">Cougars at Miami–Hamilton</span>
+          <span class="meta">MEN'S BASKETBALL · VIDEO + AUDIO</span>
+        </span>
+        <span class="state on"><i aria-hidden="true"></i>ON AIR</span>
+      </div>
+
+      <div class="feed">
+        <span class="ch">CH 2</span>
+        <span>
+          <span class="name">Lady Cougars vs. Vincennes</span>
+          <span class="meta">WOMEN'S BASKETBALL · TIP 7:45P</span>
+        </span>
+        <span class="state standby"><i aria-hidden="true"></i>STANDBY</span>
+      </div>
+
+      <div class="feed">
+        <span class="ch">CH 3</span>
+        <span>
+          <span class="name">This Week in Anderson</span>
+          <span class="meta">PODCAST · TAPING IN STUDIO</span>
+        </span>
+        <span class="state standby"><i aria-hidden="true"></i>RECORDING</span>
+      </div>
+
+      <div class="feed">
+        <span class="ch">CH 4</span>
+        <span>
+          <span class="name">Redskin Classics: 1997 Regional Final</span>
+          <span class="meta">ARCHIVE · PLAYING ON LOOP</span>
+        </span>
+        <span class="state off"><i aria-hidden="true"></i>REPLAY</span>
+      </div>
+
+      <div class="board-foot">FOUR FEEDS · ONE NETWORK · ANDERSON TOWNSHIP, OHIO</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section class="section section-paper" id="schedule">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Week of March 9</span>
+        <h2 class="display">This week on USBN</h2>
+      </div>
+      <a class="link-more" href="#schedule">Full season schedule</a>
+    </div>
+
+    <div class="log">
+      <div class="log-row head">
+        <span>Day</span><span>Air time</span><span>Broadcast</span><span>On the call</span><span>Tune in</span>
+      </div>
+
+      <div class="log-row">
+        <span class="day">TUE 3/10</span>
+        <span class="time">18:45 ET</span>
+        <span>
+          <span class="match">Lady Cougars vs. Vincennes</span>
+          <span class="sport">WOMEN'S BASKETBALL · HOME</span>
+        </span>
+        <span class="crew">Steve Ellis</span>
+        <span class="go"><a class="chip solid" href="#live">Watch</a><a class="chip" href="#live">Listen</a></span>
+      </div>
+
+      <div class="log-row">
+        <span class="day">WED 3/11</span>
+        <span class="time">19:00 ET</span>
+        <span>
+          <span class="match">Cougars vs. Maine–Augusta</span>
+          <span class="sport">MEN'S BASKETBALL · NECC TOURNAMENT</span>
+        </span>
+        <span class="crew">Dan Albers &amp; Steve Ellis</span>
+        <span class="go"><a class="chip solid" href="#live">Watch</a><a class="chip" href="#live">Listen</a></span>
+      </div>
+
+      <div class="log-row">
+        <span class="day">THU 3/12</span>
+        <span class="time">12:00 ET</span>
+        <span>
+          <span class="match">Dingo and the Coach</span>
+          <span class="sport">PODCAST · NEW EPISODE DROPS</span>
+        </span>
+        <span class="crew">Dan Albers &amp; Steve Ellis</span>
+        <span class="go"><a class="chip" href="https://dingoandthecoachpodcast.transistor.fm/">Listen</a></span>
+      </div>
+
+      <div class="log-row">
+        <span class="day">FRI 3/13</span>
+        <span class="time">18:30 ET</span>
+        <span>
+          <span class="match">Anderson at Turpin</span>
+          <span class="sport">HIGH SCHOOL FOOTBALL · SPRING SCRIMMAGE</span>
+        </span>
+        <span class="crew">USBN Friday crew</span>
+        <span class="go"><a class="chip solid" href="#live">Watch</a><a class="chip" href="#live">Listen</a></span>
+      </div>
+
+      <div class="log-row">
+        <span class="day">SAT 3/14</span>
+        <span class="time">14:00 ET</span>
+        <span>
+          <span class="match">Cougars volleyball vs. Sinclair</span>
+          <span class="sport">WOMEN'S VOLLEYBALL · HOME</span>
+        </span>
+        <span class="crew">Guest booth: alumni night</span>
+        <span class="go"><a class="chip solid" href="#live">Watch</a></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECAPS ============ -->
+<section class="section section-ink" id="recaps">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Game recaps</span>
+        <h2 class="display">How it finished</h2>
+      </div>
+      <a class="link-more" href="#recaps">All recaps</a>
+    </div>
+
+    <div class="recaps">
+      <a class="recap" href="https://usbnsports.com/mens-uc-clermont-vs-miami-hamilton-game-recap/">
+        <span class="frame"><span class="slot">PHOTO SLOT · 16:9 · GAME ACTION</span></span>
+        <span class="finalbar"><span class="fin">FINAL</span><span class="wl loss">L</span><span class="sc">66&ndash;76</span></span>
+        <span class="body">
+          <span class="date">MARCH 8, 2026</span>
+          <h3>Men's UC Clermont vs. Miami&ndash;Hamilton</h3>
+          <p>The Harriers took it 76&ndash;66 on Friday in Buffalo. The Cougars opened fast before the run dried up in the second half.</p>
+          <span class="read">READ THE RECAP &rarr;</span>
+        </span>
+      </a>
+
+      <a class="recap" href="https://usbnsports.com/mens-uc-clermont-vs-university-of-maine-augusta-game-recap-2026/">
+        <span class="frame"><span class="slot">PHOTO SLOT · 16:9 · GAME ACTION</span></span>
+        <span class="finalbar"><span class="fin">FINAL</span><span class="wl win">W</span><span class="sc">96&ndash;84</span></span>
+        <span class="body">
+          <span class="date">MARCH 8, 2026</span>
+          <h3>Men's UC Clermont vs. Maine&ndash;Augusta</h3>
+          <p>A back-and-forth first half gave way to a 96&ndash;84 Cougars win on Wednesday night in Buffalo.</p>
+          <span class="read">READ THE RECAP &rarr;</span>
+        </span>
+      </a>
+
+      <a class="recap" href="https://usbnsports.com/womens-uc-clermont-vincennes-university-game-recap-2026/">
+        <span class="frame"><span class="slot">PHOTO SLOT · 16:9 · GAME ACTION</span></span>
+        <span class="finalbar"><span class="fin">FINAL</span><span class="wl loss">L</span><span class="sc">37&ndash;101</span></span>
+        <span class="body">
+          <span class="date">FEBRUARY 27, 2026</span>
+          <h3>Women's UC Clermont at Vincennes</h3>
+          <p>The Trail Blazers pulled away in Vincennes, Indiana, scoring 31 in the opening quarter on the way to 101&ndash;37.</p>
+          <span class="read">READ THE RECAP &rarr;</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PODCASTS ============ -->
+<section class="section section-paper" id="podcasts">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Three shows, every week</span>
+        <h2 class="display">From the USBN studio</h2>
+      </div>
+      <a class="link-more" href="#podcasts">Subscribe anywhere</a>
+    </div>
+
+    <div class="pods">
+      <a class="pod" href="https://positiveenergy.transistor.fm/">
+        <span class="bars" aria-hidden="true"><i style="height:9px"></i><i style="height:20px"></i><i style="height:13px"></i><i style="height:26px"></i><i style="height:16px"></i><i style="height:7px"></i><i style="height:22px"></i></span>
+        <h3>Positive Energy</h3>
+        <p>Conversations with the athletes, coaches and neighbors who keep local sports going.</p>
+        <span class="host">USBN ORIGINAL</span>
+        <span class="go">Listen &rarr;</span>
+      </a>
+
+      <a class="pod" href="https://dingoandthecoachpodcast.transistor.fm/">
+        <span class="bars" aria-hidden="true"><i style="height:16px"></i><i style="height:8px"></i><i style="height:24px"></i><i style="height:12px"></i><i style="height:26px"></i><i style="height:10px"></i><i style="height:18px"></i></span>
+        <h3>Dingo and the Coach</h3>
+        <p>Dan Albers and Steve Ellis break down the week's games, the calls, and the arguments worth having.</p>
+        <span class="host">WITH DAN ALBERS &amp; STEVE ELLIS</span>
+        <span class="go">Listen &rarr;</span>
+      </a>
+
+      <a class="pod" href="https://thisweekinandersonpodcast.transistor.fm/">
+        <span class="bars" aria-hidden="true"><i style="height:22px"></i><i style="height:11px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:9px"></i><i style="height:20px"></i><i style="height:14px"></i></span>
+        <h3>This Week in Anderson</h3>
+        <p>Everything happening around Anderson Township, from Friday night lights to the alumni association.</p>
+        <span class="host">WITH DAN ALBERS &amp; STEVE ELLIS</span>
+        <span class="go">Listen &rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEAMS ============ -->
+<section class="section section-ink" id="teams">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Who we cover</span>
+        <h2 class="display">Your teams, all season</h2>
+      </div>
+      <a class="link-more" href="#teams">Team pages</a>
+    </div>
+
+    <div class="teams">
+      <a class="team" href="https://usbnsports.com/anderson-football/">
+        <span class="initials" aria-hidden="true">AF</span>
+        <h3>Anderson<br>Football</h3>
+        <span class="tag">FRIDAY NIGHTS · FULL SEASON</span>
+      </a>
+      <a class="team" href="https://usbnsports.com/uc-clermont/uc-clermont-basketball/">
+        <span class="initials" aria-hidden="true">MB</span>
+        <h3>Cougars<br>Men's Hoops</h3>
+        <span class="tag">UC CLERMONT · NECC</span>
+      </a>
+      <a class="team" href="https://usbnsports.com/womens-basketball/">
+        <span class="initials" aria-hidden="true">WB</span>
+        <h3>Lady Cougars<br>Basketball</h3>
+        <span class="tag">UC CLERMONT · NECC</span>
+      </a>
+      <a class="team" href="https://usbnsports.com/cougars-volleyball/">
+        <span class="initials" aria-hidden="true">VB</span>
+        <h3>Cougars<br>Volleyball</h3>
+        <span class="tag">UC CLERMONT · FALL SLATE</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section class="section section-ink" id="about" style="padding-top:0">
+  <div class="wrap about">
+    <div>
+      <span class="eyebrow">About USBN</span>
+      <h2 class="display" style="margin-top:10px">We put a camera<br>on the games<br>nobody else covers</h2>
+      <p class="lede" style="margin-top:20px">USBN is a local broadcast network built around one idea: high school and small-college athletes deserve the same production a Division I team gets. Live video, a real radio call, and the stories that don't make the highlight shows.</p>
+      <div class="hero-actions" style="margin-top:26px;margin-bottom:0">
+        <a class="btn btn-primary" href="#about">Work with our crew</a>
+        <a class="btn btn-ghost" href="#about">Sponsor a broadcast</a>
+      </div>
+    </div>
+
+    <ul class="covers">
+      <li><span class="n">01</span><span class="t"><b>Live game broadcasts</b><span>Real-time video and audio with professional commentary.</span></span></li>
+      <li><span class="n">02</span><span class="t"><b>Interviews</b><span>Athletes, coaches and the people around the program.</span></span></li>
+      <li><span class="n">03</span><span class="t"><b>Highlights and recaps</b><span>Every game written up, usually the same night.</span></span></li>
+      <li><span class="n">04</span><span class="t"><b>Feature stories</b><span>The seasons and careers worth remembering.</span></span></li>
+      <li><span class="n">05</span><span class="t"><b>Podcasts</b><span>Three weekly shows from the USBN studio.</span></span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta">
+  <div class="wrap cta-in">
+    <div>
+      <h2 class="display">Never miss a tip-off</h2>
+      <p>Get the week's broadcast schedule every Monday morning, plus a text when your team goes live.</p>
+    </div>
+    <a class="btn btn-primary" href="#about">Get the schedule</a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="mark" href="#top" style="margin-bottom:6px">
+          <span class="dot" aria-hidden="true"></span>
+          <span><span class="word">USBN</span><span class="sub">ULTIMATE SPORTS BROADCASTING NETWORK</span></span>
+        </a>
+        <p>Broadcasting Anderson Township and UC Clermont athletics from Cincinnati, Ohio.</p>
+        <div class="social">
+          <a href="https://youtube.com/@usbnsportsnetwork" aria-label="YouTube">YT</a>
+          <a href="https://www.facebook.com/USBNSports" aria-label="Facebook">FB</a>
+          <a href="#" aria-label="Instagram">IG</a>
+          <a href="#" aria-label="X">X</a>
+          <a href="#" aria-label="Spotify">SP</a>
+        </div>
+      </div>
+
+      <div>
+        <h4>Watch &amp; listen</h4>
+        <ul>
+          <li><a href="#live">Live now</a></li>
+          <li><a href="#schedule">Broadcast schedule</a></li>
+          <li><a href="#recaps">Game recaps</a></li>
+          <li><a href="#podcasts">Podcasts</a></li>
+          <li><a href="https://usbnsports.com/redskin-classics/">Archive: Redskin Classics</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Teams</h4>
+        <ul>
+          <li><a href="https://usbnsports.com/anderson-football/">Anderson Football</a></li>
+          <li><a href="https://usbnsports.com/uc-clermont/uc-clermont-basketball/">Men's Basketball</a></li>
+          <li><a href="https://usbnsports.com/womens-basketball/">Women's Basketball</a></li>
+          <li><a href="https://usbnsports.com/cougars-volleyball/">Women's Volleyball</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Network</h4>
+        <ul>
+          <li><a href="#about">About USBN</a></li>
+          <li><a href="#about">Sponsor a broadcast</a></li>
+          <li><a href="#about">Book our crew</a></li>
+          <li><a href="https://ahsfaa.com/">Anderson HS Football Alumni</a></li>
+          <li><a href="#about">Contact the station</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bot">
+      <span>&copy;2026 ULTIMATE SPORTS BROADCASTING NETWORK</span>
+      <span>CINCINNATI, OHIO</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var el = document.getElementById('clock');
+  function tick(){
+    var t = new Date().toLocaleTimeString('en-US', {
+      hour12:false, timeZone:'America/New_York',
+      hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+    el.textContent = t + ' ET';
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
